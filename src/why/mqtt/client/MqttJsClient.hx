@@ -80,6 +80,7 @@ class MqttJsClient implements Client {
 	}
 }
 
+// TODO: expose more vendor-specific configs
 typedef MqttJsClientConfig = Config & {
 	final url:String;
 }
