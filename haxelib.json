@@ -1,0 +1,14 @@
+{
+  "name": "why-mqtt",
+  "license": "MIT",
+  "tags": [
+    "mqtt"
+  ],
+  "classPath": "src",
+  "contributors": [
+    "kevinresol"
+  ],
+  "releasenote": "initial release",
+  "version": "0.0.0",
+  "dependencies": {}
+}
