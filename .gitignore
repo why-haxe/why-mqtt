@@ -1,3 +1,4 @@
 bin/js
 bin/node/*.js
+bin/playground/*.js
 node_modules

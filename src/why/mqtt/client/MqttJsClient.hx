@@ -85,8 +85,11 @@ typedef MqttJsClientConfig = Config & {
 	final url:String;
 }
 
-// @:native('mqtt')
+#if (nodejs || mqttjs.global)
 @:jsRequire('mqtt')
+#else
+@:native('mqtt')
+#end
 extern class Native {
 	static function connect(url:String, options:{}):Native;
 	function on(event:String, f:Function):Void;

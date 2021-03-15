@@ -7,6 +7,7 @@ class Message {
 	public final payload:Chunk;
 	public final qos:Qos;
 	public final retain:Bool;
+	// public final duplicate:Bool;
 	
 	public function new(topic, payload, qos:Qos = AtMostOnce, retain = false) {
 		this.topic = topic;

@@ -1,1 +1,3 @@
 -cp src
+-lib tink_chunk
+-lib tink_core

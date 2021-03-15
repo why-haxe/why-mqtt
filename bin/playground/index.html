@@ -1,0 +1,17 @@
+<html>
+<body>
+	<meta charset="utf-8">
+	<script>
+	  // a hack specifically for haxe.unit.TestRunner();
+		if(!window.process) window.process = {};
+		if(!process.stdout) process.stdout = {};
+		if(!process.stdout.write) process.stdout.write = console.log;
+		window.onerror = function(msg, url, line, col, e) {
+			window.travixThrow(e instanceof HaxeError ? e.val : e);
+			return true;
+		}
+	</script>
+	<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+	<script src="index.js"></script>
+</body>
+</html>

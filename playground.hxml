@@ -1,0 +1,5 @@
+-cp tests
+-main Playground
+-js bin/playground/index.js
+
+-lib why-mqtt
