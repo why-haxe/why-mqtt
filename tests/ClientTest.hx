@@ -38,8 +38,14 @@ class ClientTest {
 		final b1 = client.messageReceived.handle(check);
 		var b2:CallbackLink = null;
 		b2 = client.subscribe('haxe/why/mqtt/test').handle(function(o) switch o {
-			case Success(sub): b2 = sub;
-			case Failure(e): asserts.fail(e);
+			case Success(sub):
+				b2 = sub;
+				client.publish(new Message('haxe/why/mqtt/test', 'heyo')).handle(o -> switch o {
+					case Success(_): // ok
+					case Failure(e): asserts.fail(e);
+				});
+			case Failure(e):
+				asserts.fail(e);
 		});
 		
 		binding = () -> {
@@ -47,7 +53,7 @@ class ClientTest {
 			b2.cancel();
 		}
 		
-		client.publish(new Message('haxe/why/mqtt/test', 'heyo'));
+		
 		
 		return asserts;
 	}

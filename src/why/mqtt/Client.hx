@@ -6,6 +6,8 @@ using tink.CoreApi;
 
 interface Client {
 	final messageReceived:Signal<Message>;
+	final disconnected:Signal<Noise>;
+	var active(get, never):Bool;
 	function connect():Promise<Noise>;
 	function publish(message:Message):Promise<Noise>;
 	function subscribe(topic:Topic, ?options:SubscribeOptions):Promise<Subscription>;
