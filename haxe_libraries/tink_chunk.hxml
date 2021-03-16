@@ -1,3 +1,3 @@
--cp ${SCOPE_DIR}/../tink_chunk/src
+# @install: lix --silent download "gh://github.com/haxetink/tink_chunk#8c72aaa434bd561543282ab52cba6e8841b98280" into tink_chunk/0.3.1/github/8c72aaa434bd561543282ab52cba6e8841b98280
+-cp ${HAXE_LIBCACHE}/tink_chunk/0.3.1/github/8c72aaa434bd561543282ab52cba6e8841b98280/src
 -D tink_chunk=0.3.1
---macro Sys.println("haxe_libraries/tink_chunk.hxml:2: [Warning] Using dev version of library tink_chunk")
