@@ -54,7 +54,7 @@ class MqttJsClient extends BaseClient {
 					native.on('offline', () -> disconnectedTrigger.trigger(Noise));
 					native.on('close', () -> disconnectedTrigger.trigger(Noise));
 					native.on('end', () -> disconnectedTrigger.trigger(Noise));
-					native.on('message', (topic, payload, packet) -> messageReceivedTrigger.trigger(new Message(topic, payload, packet.qos, packet.retain)));
+					native.on('message', (topic, payload:Buffer, packet) -> messageReceivedTrigger.trigger(new Message(topic, payload, packet.qos, packet.retain)));
 					
 				}
 				catch(e)
