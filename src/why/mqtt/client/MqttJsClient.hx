@@ -85,11 +85,13 @@ class MqttJsClient extends BaseClient {
 				(err, granted) -> {
 					if(err != null)
 						reject(Error.ofJsError(err))
-					else {
-						final v = granted[0];
-						if((v.qos:Int) == 128)
+					else switch granted[0] {
+						case null:
+							// TODO: this is likely because already subscribed
+							reject(new Error('Failed to subscribe (no grant)'));
+						case v if((v.qos:Int) == 128):
 							reject(new Error('Failed to subscribe (SUBACK: 128)'));
-						else
+						case v:
 							resolve(new Subscription(() -> native.unsubscribe(v.topic), v.topic, v.qos));
 					}
 				}
