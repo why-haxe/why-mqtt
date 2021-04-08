@@ -19,6 +19,17 @@ class KeepAliveClient extends BaseClient {
 		reconnected = reconnectedTrigger = Signal.trigger();
 	}
 	
+	inline function log(v:String) {
+		#if sys
+			Sys.println
+		#elseif js
+			untyped console.log
+		#else
+			trace
+		#end
+		
+		('${Date.now().toString()}: [KeepAliveClient] $v');
+	}
 	
 	/*
 		try connect:
@@ -44,7 +55,7 @@ class KeepAliveClient extends BaseClient {
 		}
 		
 		return (function tryConnect(delay = 100, reconnecting = false):Promise<Noise> {
-			trace('[KeepAliveClient] try connect: $delay, $reconnecting');
+			log('try connect: $delay, $reconnecting');
 			return
 				if(disconnecting)
 					abort();
