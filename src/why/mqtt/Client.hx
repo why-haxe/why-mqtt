@@ -26,7 +26,7 @@ typedef Config = {
 }
 
 typedef SubscribeOptions = {
-	?qos:Qos,
+	final ?qos:Qos;
 }
 
 class Subscription extends tink.core.Callback.SimpleLink {
