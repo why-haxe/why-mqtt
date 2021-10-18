@@ -14,7 +14,7 @@ class MqttJsClient extends BaseClient {
 		super();
 		this.config = config;
 	}
-
+	
 	function doConnect():Promise<Noise> {
 		return if(native != null) {
 			new Error(Conflict, 'Already attempted to connect');
@@ -39,22 +39,13 @@ class MqttJsClient extends BaseClient {
 							}
 						}
 					});
-				
-					// native.on('connect', () -> trace('connect'));
-					// native.on('error', () -> trace('error'));
-					// native.on('offline', () -> trace('offline'));
-					// native.on('close', () -> trace('close'));
-					// native.on('end', () -> trace('end'));
-					// native.on('message', () -> trace('message'));
 					
-					native.on('connect', resolve.bind(Noise));
-					native.on('error', err -> reject(Error.ofJsError(err)));
-					if(config.reconnectPeriod == 0) // declare connect() as fail if there is no auto-reconnect
-						native.on('close', () -> reject(new Error('Closed')));
-					native.on('offline', () -> disconnectedTrigger.trigger(Noise));
-					native.on('close', () -> disconnectedTrigger.trigger(Noise));
-					native.on('end', () -> disconnectedTrigger.trigger(Noise));
-					native.on('message', (topic, payload:Buffer, packet) -> messageReceivedTrigger.trigger(new Message(topic, payload, packet.qos, packet.retain)));
+					native.on('connect', () -> {
+						haxe.Timer.delay(resolve.bind(Noise), 0);  // there may be error right after connect and we should prioritize that
+						native.on('close', () -> disconnectedTrigger.trigger(Noise));
+						native.on('message', (topic, payload:Buffer, packet) -> messageReceivedTrigger.trigger(new Message(topic, payload, packet.qos, packet.retain)));
+					});
+					native.on('error', err -> if(config.reconnectPeriod == 0) reject(Error.ofJsError(err)));
 					
 				}
 				catch(e)

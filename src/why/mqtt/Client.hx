@@ -16,7 +16,7 @@ interface Client {
 
 // standard mqtt configs
 typedef Config = {
-	final ?keepAlive:Int;
+	final ?keepAlive:Int; // seconds
 	final ?clientId:String;
 	final ?version:Int;
 	final ?cleanSession:Bool;
