@@ -6,6 +6,7 @@ import why.mqtt.Message;
 using tink.CoreApi;
 
 @:asserts
+@:timeout(20000)
 class ClientTest {
 
 	final client:Client;
