@@ -3,6 +3,7 @@ package;
 import tink.unit.*;
 import tink.testrunner.*;
 import why.mqtt.client.MqttJsClient;
+import why.mqtt.client.KeepAliveClient;
 
 class RunTests {
 
@@ -19,6 +20,7 @@ class RunTests {
 				#end
 			})),
 			#end
+			new KeepAliveTest(() -> new MqttJsClient({url: 'mqtt://localhost:1883'})),
 		])).handle(Runner.exit);
 	}
 

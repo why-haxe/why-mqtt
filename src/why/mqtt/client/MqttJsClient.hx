@@ -15,7 +15,7 @@ class MqttJsClient extends BaseClient {
 		this.config = config;
 	}
 	
-	function doConnect():Promise<Noise> {
+	function doConnect():Promise<Connack> {
 		return if(native != null) {
 			new Error(Conflict, 'Already attempted to connect');
 		} else {
@@ -40,10 +40,15 @@ class MqttJsClient extends BaseClient {
 						}
 					});
 					
+					// native.once('connect', o -> trace('connected', o));
+					// native.once('close', () -> trace('close'));
+					// native.once('offline', () -> trace('offline'));
+					// native.once('error', e -> trace('error', e));
+					// native.once('message', (m1, m2) -> trace(m1, m2));
 					
 					var initBindings:CallbackLink = null;
-					native.once('connect', function onConnect() {
-						haxe.Timer.delay(resolve.bind(Noise), 0);  // there may be error right after connect and we should prioritize that
+					native.once('connect', function onConnect(o) {
+						haxe.Timer.delay(resolve.bind({sessionPresent: o.sessionPresent}), 0);  // there may be error right after connect and we should prioritize that
 						initBindings.cancel();
 						var bindings:CallbackLink = null;
 						

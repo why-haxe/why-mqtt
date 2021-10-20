@@ -4,10 +4,13 @@ import why.mqtt.Client;
 
 using tink.CoreApi;
 
+
+typedef SubscriptionConfig = {final topic:Topic; final ?options:SubscribeOptions;}
 class KeepAliveClient extends BaseClient {
-	public final reconnected:Signal<Noise>;
-	final reconnectedTrigger:SignalTrigger<Noise>;
+	public final reconnected:Signal<Connack>;
+	final reconnectedTrigger:SignalTrigger<Connack>;
 	
+	final subscriptions:Array<SubscriptionConfig> = [];
 	final makeClient:()->Promise<Client>;
 	var disconnecting:Bool;
 	var client:Promise<Client>;
@@ -46,7 +49,7 @@ class KeepAliveClient extends BaseClient {
 			stop "try connect" if the loop is active
 			if connected, disconnect
 	*/
-	function doConnect():Promise<Noise> {
+	function doConnect():Promise<Connack> {
 		disconnecting = false;
 		
 		function abort() {
@@ -54,7 +57,7 @@ class KeepAliveClient extends BaseClient {
 			return new Error(Gone, 'Closed');
 		}
 		
-		return (function tryConnect(delay = 100, reconnecting = false):Promise<Noise> {
+		return (function tryConnect(delay = 100, reconnecting = false):Promise<Connack> {
 			log('try connect: $delay, $reconnecting');
 			return
 				if(disconnecting)
@@ -66,12 +69,12 @@ class KeepAliveClient extends BaseClient {
 								abort();
 							else
 								c.connect()
-									.next(_ -> {
+									.next(connack -> {
 										if(disconnecting)
 											abort();
 										else {
 											if(reconnecting)
-												reconnectedTrigger.trigger(Noise);
+												reconnectedTrigger.trigger(connack);
 											
 											binding = [
 												c.messageReceived.handle(messageReceivedTrigger.trigger),
@@ -80,7 +83,11 @@ class KeepAliveClient extends BaseClient {
 													binding = tryConnect(true).handle(function() {});
 												}),
 											];
-											Promise.NOISE;
+											if(!connack.sessionPresent) {
+												resubscribe().swap(connack);
+											} else {
+												connack;
+											}
 										}
 									})
 									.tryRecover(e -> {
@@ -101,7 +108,11 @@ class KeepAliveClient extends BaseClient {
 	}
 	
 	function doSubscribe(topic:Topic, ?options:SubscribeOptions):Promise<Subscription> {
-		return client.next(c -> c.subscribe(topic, options));
+		final subscription:SubscriptionConfig = {topic: topic, options: options};
+		subscriptions.push(subscription);
+		return client
+			.next(c -> c.subscribe(topic, options))
+			.next(sub -> new Subscription((sub:CallbackLink) & () -> subscriptions.remove(subscription), sub.topic, sub.qos));
 	}
 	
 	function doClose():Promise<Noise> {
@@ -111,6 +122,10 @@ class KeepAliveClient extends BaseClient {
 			binding.cancel();
 			c.close();
 		});
+	}
+	
+	function resubscribe():Promise<Noise> {
+		return client.next(c -> Promise.inParallel([for(sub in subscriptions) c.subscribe(sub.topic, sub.options)]));
 	}
 	
 	function get_active() {

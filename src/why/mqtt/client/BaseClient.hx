@@ -17,7 +17,7 @@ abstract class BaseClient implements Client {
 		disconnected = disconnectedTrigger = Signal.trigger();
 	}
 	
-	public function connect():Promise<Noise> {
+	public function connect():Promise<Connack> {
 		return if(active) new Error(Conflict, 'Already attempted to connect') else doConnect();
 	}
 	
@@ -33,7 +33,7 @@ abstract class BaseClient implements Client {
 		return if(!active) new Error('Client not active, call connect() first') else doClose();
 	}
 	
-	abstract function doConnect():Promise<Noise>;
+	abstract function doConnect():Promise<Connack>;
 	abstract function doPublish(message:Message):Promise<Noise>;
 	abstract function doSubscribe(topic:Topic, ?options:SubscribeOptions):Promise<Subscription>;
 	abstract function doClose():Promise<Noise>;

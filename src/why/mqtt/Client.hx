@@ -8,7 +8,7 @@ interface Client {
 	final messageReceived:Signal<Message>;
 	final disconnected:Signal<Noise>;
 	var active(get, never):Bool;
-	function connect():Promise<Noise>;
+	function connect():Promise<Connack>;
 	function publish(message:Message):Promise<Noise>;
 	function subscribe(topic:Topic, ?options:SubscribeOptions):Promise<Subscription>;
 	function close():Promise<Noise>;
@@ -23,6 +23,10 @@ typedef Config = {
 	final ?username:String;
 	final ?password:String;
 	final ?willMessage:Message;
+}
+
+typedef Connack = {
+	final sessionPresent:Bool;
 }
 
 typedef SubscribeOptions = {

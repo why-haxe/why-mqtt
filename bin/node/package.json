@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "aedes": "^0.46.1",
     "async-mqtt": "^2.6.1"
   }
 }
