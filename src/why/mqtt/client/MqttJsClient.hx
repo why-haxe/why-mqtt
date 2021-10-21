@@ -48,6 +48,7 @@ class MqttJsClient extends BaseClient {
 					// native.once('offline', () -> trace('offline'));
 					// native.once('error', e -> trace('error', e));
 					// native.once('message', (m1, m2) -> trace(m1, m2));
+					final autoReconnect = config.reconnectPeriod > 0;
 					
 					var initBindings:CallbackLink = null;
 					native.once('connect', function onConnect(o) {
@@ -57,7 +58,9 @@ class MqttJsClient extends BaseClient {
 						
 						native.on('close', function onClose() {
 							disconnectedTrigger.trigger(Noise);
-							if(config.reconnectPeriod == 0) bindings.cancel();
+							if(!autoReconnect) {
+								bindings.cancel();
+							}
 						});
 						native.on('message', function onMessage(topic, payload:Buffer, packet) messageReceivedTrigger.trigger(new Message(topic, payload, packet.qos, packet.retain)));
 						bindings = [
@@ -66,7 +69,7 @@ class MqttJsClient extends BaseClient {
 						];
 					});
 					native.once('error', function onConnectFail(err) {
-						if(config.reconnectPeriod == 0) {
+						if(!autoReconnect) {
 							initBindings.cancel();
 							reject(Error.ofJsError(err));
 						}
