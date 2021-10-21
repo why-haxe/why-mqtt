@@ -28,7 +28,10 @@ class MqttJsClient extends BaseClient {
 						clean: config.cleanSession,
 						username: config.username,
 						password: config.password,
-						reconnectPeriod: config.reconnectPeriod,
+						reconnectPeriod: switch config.reconnectPeriod {
+							case null: 0; // Disable auto reconnect by default (this default behaviour should be consistent at why-mqtt level)
+							case v: v;
+						},
 						will: switch config.willMessage {
 							case null: null;
 							case will: {
