@@ -50,34 +50,28 @@ class MqttJsClient extends BaseClient {
 					// native.once('message', (m1, m2) -> trace(m1, m2));
 					final autoReconnect = config.reconnectPeriod > 0;
 					
-					var initBindings:CallbackLink = null;
 					native.once('connect', function onConnect(o) {
 						haxe.Timer.delay(resolve.bind({sessionPresent: o.sessionPresent}), 0);  // there may be error right after connect and we should prioritize that
-						initBindings.cancel();
-						var bindings:CallbackLink = null;
+						native.off('connect', onConnect); // TODO: not sure we still need this
+						// native.off('error', onConnectFail); // TODO: not sure we still need this
+
+						native.on('message', function onMessage(topic, payload:Buffer, packet) messageReceivedTrigger.trigger(new Message(topic, payload, packet.qos, packet.retain)));
 						
 						native.on('close', function onClose() {
 							disconnectedTrigger.trigger(Noise);
 							if(!autoReconnect) {
-								bindings.cancel();
+								native.off('message', onMessage);
+								native.off('close', onClose);
 							}
 						});
-						native.on('message', function onMessage(topic, payload:Buffer, packet) messageReceivedTrigger.trigger(new Message(topic, payload, packet.qos, packet.retain)));
-						bindings = [
-							native.off.bind('close', onClose),
-							native.off.bind('message', onMessage)
-						];
 					});
 					native.once('error', function onConnectFail(err) {
 						if(!autoReconnect) {
-							initBindings.cancel();
+							native.off('connect', onConnect);
+							native.off('error', onConnectFail);
 							reject(Error.ofJsError(err));
 						}
 					});
-					initBindings = [
-						native.off.bind('connect', onConnect),
-						native.off.bind('error', onConnectFail),
-					];
 				}
 				catch(e)
 					reject(Error.withData('Native driver failed to connect', e));
