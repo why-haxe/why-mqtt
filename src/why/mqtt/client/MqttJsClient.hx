@@ -52,8 +52,6 @@ class MqttJsClient extends BaseClient {
 					
 					native.once('connect', function onConnect(o) {
 						haxe.Timer.delay(resolve.bind({sessionPresent: o.sessionPresent}), 0);  // there may be error right after connect and we should prioritize that
-						native.off('connect', onConnect); // TODO: not sure we still need this
-						// native.off('error', onConnectFail); // TODO: not sure we still need this
 
 						native.on('message', function onMessage(topic, payload:Buffer, packet) messageReceivedTrigger.trigger(new Message(topic, payload, packet.qos, packet.retain)));
 						
