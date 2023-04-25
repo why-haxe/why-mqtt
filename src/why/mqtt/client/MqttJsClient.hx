@@ -14,7 +14,7 @@ class MqttJsClient extends BaseClient {
 		super();
 		this.config = config;
 	}
-	
+
 	function doConnect():Promise<Connack> {
 		return if(native != null) {
 			new Error(Conflict, 'Already attempted to connect');
@@ -64,8 +64,8 @@ class MqttJsClient extends BaseClient {
 						});
 						native.on('message', function onMessage(topic, payload:Buffer, packet) messageReceivedTrigger.trigger(new Message(topic, payload, packet.qos, packet.retain)));
 						bindings = [
-							native.off.bind('close', onClose),
-							native.off.bind('message', onMessage)
+							native.removeListener.bind('close', onClose),
+							native.removeListener.bind('message', onMessage)
 						];
 					});
 					native.once('error', function onConnectFail(err) {
@@ -75,8 +75,8 @@ class MqttJsClient extends BaseClient {
 						}
 					});
 					initBindings = [
-						native.off.bind('connect', onConnect),
-						native.off.bind('error', onConnectFail),
+						native.removeListener.bind('connect', onConnect),
+						native.removeListener.bind('error', onConnectFail),
 					];
 				}
 				catch(e)
@@ -153,6 +153,7 @@ extern class Native {
 	function on(event:String, f:Function):Void;
 	function once(event:String, f:Function):Void;
 	function off(event:String, f:Function):Void;
+	function removeListener(event:String, f:Function):Void;
 	function publish(topic:String, payload:Buffer, options:{}, cb:(err:js.lib.Error)->Void):Void;
 	function subscribe(topic:String, options:{}, cb:(err:js.lib.Error, granted:Array<{topic:String, qos:Qos}>)->Void):Void;
 	function unsubscribe(topic:String, ?cb:(err:js.lib.Error)->Void):Void;
