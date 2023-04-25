@@ -56,13 +56,13 @@ class MqttJsClient extends BaseClient {
 						initBindings.cancel();
 						var bindings:CallbackLink = null;
 						
-						native.on('close', function onClose() {
+						native.addListener('close', function onClose() {
 							disconnectedTrigger.trigger(Noise);
 							if(!autoReconnect) {
 								bindings.cancel();
 							}
 						});
-						native.on('message', function onMessage(topic, payload:Buffer, packet) messageReceivedTrigger.trigger(new Message(topic, payload, packet.qos, packet.retain)));
+						native.addListener('message', function onMessage(topic, payload:Buffer, packet) messageReceivedTrigger.trigger(new Message(topic, payload, packet.qos, packet.retain)));
 						bindings = [
 							native.removeListener.bind('close', onClose),
 							native.removeListener.bind('message', onMessage)
@@ -150,9 +150,10 @@ typedef MqttJsClientConfig = Config & {
 #end
 extern class Native {
 	static function connect(url:String, options:{}):Native;
-	function on(event:String, f:Function):Void;
 	function once(event:String, f:Function):Void;
+	function on(event:String, f:Function):Void;
 	function off(event:String, f:Function):Void;
+	function addListener(event:String, f:Function):Void;
 	function removeListener(event:String, f:Function):Void;
 	function publish(topic:String, payload:Buffer, options:{}, cb:(err:js.lib.Error)->Void):Void;
 	function subscribe(topic:String, options:{}, cb:(err:js.lib.Error, granted:Array<{topic:String, qos:Qos}>)->Void):Void;
