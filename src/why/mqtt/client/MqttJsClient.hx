@@ -152,7 +152,7 @@ extern class Native {
 	static function connect(url:String, options:{}):Native;
 	function once(event:String, f:Function):Void;
 	function on(event:String, f:Function):Void;
-	function off(event:String, f:Function):Void;
+	function off(event:String, f:Function):Void; // For latest mqtt version is missing this function, https://github.com/mqttjs/MQTT.js/issues/1552
 	function addListener(event:String, f:Function):Void;
 	function removeListener(event:String, f:Function):Void;
 	function publish(topic:String, payload:Buffer, options:{}, cb:(err:js.lib.Error)->Void):Void;
