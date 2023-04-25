@@ -14,7 +14,7 @@ class MqttJsClient extends BaseClient {
 		super();
 		this.config = config;
 	}
-	
+
 	function doConnect():Promise<Connack> {
 		return if(native != null) {
 			new Error(Conflict, 'Already attempted to connect');
@@ -50,26 +50,34 @@ class MqttJsClient extends BaseClient {
 					// native.once('message', (m1, m2) -> trace(m1, m2));
 					final autoReconnect = config.reconnectPeriod > 0;
 					
+					var initBindings:CallbackLink = null;
 					native.once('connect', function onConnect(o) {
 						haxe.Timer.delay(resolve.bind({sessionPresent: o.sessionPresent}), 0);  // there may be error right after connect and we should prioritize that
-
-						native.on('message', function onMessage(topic, payload:Buffer, packet) messageReceivedTrigger.trigger(new Message(topic, payload, packet.qos, packet.retain)));
+						initBindings.cancel();
+						var bindings:CallbackLink = null;
 						
-						native.on('close', function onClose() {
+						native.addListener('close', function onClose() {
 							disconnectedTrigger.trigger(Noise);
 							if(!autoReconnect) {
-								native.off('message', onMessage);
-								native.off('close', onClose);
+								bindings.cancel();
 							}
 						});
+						native.addListener('message', function onMessage(topic, payload:Buffer, packet) messageReceivedTrigger.trigger(new Message(topic, payload, packet.qos, packet.retain)));
+						bindings = [
+							native.removeListener.bind('close', onClose),
+							native.removeListener.bind('message', onMessage)
+						];
 					});
 					native.once('error', function onConnectFail(err) {
 						if(!autoReconnect) {
-							native.off('connect', onConnect);
-							native.off('error', onConnectFail);
+							initBindings.cancel();
 							reject(Error.ofJsError(err));
 						}
 					});
+					initBindings = [
+						native.removeListener.bind('connect', onConnect),
+						native.removeListener.bind('error', onConnectFail),
+					];
 				}
 				catch(e)
 					reject(Error.withData('Native driver failed to connect', e));
@@ -142,9 +150,11 @@ typedef MqttJsClientConfig = Config & {
 #end
 extern class Native {
 	static function connect(url:String, options:{}):Native;
-	function on(event:String, f:Function):Void;
 	function once(event:String, f:Function):Void;
+	function on(event:String, f:Function):Void;
 	function off(event:String, f:Function):Void;
+	function addListener(event:String, f:Function):Void;
+	function removeListener(event:String, f:Function):Void;
 	function publish(topic:String, payload:Buffer, options:{}, cb:(err:js.lib.Error)->Void):Void;
 	function subscribe(topic:String, options:{}, cb:(err:js.lib.Error, granted:Array<{topic:String, qos:Qos}>)->Void):Void;
 	function unsubscribe(topic:String, ?cb:(err:js.lib.Error)->Void):Void;
